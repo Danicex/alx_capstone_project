@@ -1,11 +1,13 @@
 from django.shortcuts import render
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from  rest_framework.permissions  import IsAuthenticated, AllowAny
-from  rest_framework import viewsets, status, views, filters
+from  .permissions import IsOwner
+from  rest_framework import viewsets, status, views, filters, generics
 from .models import Products
-from  .serializers import ProductSerializer, UserRegistrationSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+from  .serializers import ProductSerializer, UserSerializer
+from rest_framework.decorators import action
 # Create your views here.
 
 class ProtectedView(APIView):
@@ -17,27 +19,31 @@ class ProtectedView(APIView):
 class ProductList(viewsets.ModelViewSet):
     queryset = Products.objects.all()
     serializer_class = ProductSerializer
-    filter_backends = [filters.SearchFilter]
+    filter_search = [filters.SearchFilter]
     search_fields = ['name']
+    permission_classes = [AllowAny]
+
 
     def get_queryset(self):
-        # Restrict to the authenticated user's products
-        user = self.request.user
-        return Products.objects.filter(user=user)
+        # Ensure users can only see their own products
+        return Products.objects.filter(user=self.request.user)
 
-class RegisterView(views.APIView):
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({
-                "message":  "user created sucessfully",
-                "user" : {
-                    "username" : user.username,
-                    "email": user.email
-                }, 
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class LoginView(TokenObtainPairView):
+    def perform_create(self, serializer):
+        # Associate the logged-in user with the product
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['delete'], permission_classes=[IsOwner])
+
+    def delete(self, request, pk=None):
+        product = self.get_object()
+        product.delete()
+        return Response({"message": "Product deleted successfully"})
+
+class CreateUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+   
+   
+
