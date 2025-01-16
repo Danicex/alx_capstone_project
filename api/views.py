@@ -6,7 +6,7 @@ from  rest_framework.permissions  import IsAuthenticated, AllowAny
 from  .permissions import IsOwner
 from  rest_framework import viewsets, status, views, filters, generics
 from .models import Products
-from  .serializers import ProductSerializer, UserSerializer
+from  .serializers import ProductSerializer, UserRegistrationSerializer
 from rest_framework.decorators import action
 # Create your views here.
 
@@ -41,7 +41,7 @@ class ProductList(viewsets.ModelViewSet):
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
    

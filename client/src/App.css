@@ -1,0 +1,26 @@
+body.light {
+  background-color: rgb(243, 243, 243);
+  color: #181818;
+}
+body.light li a{
+  color: #000000;
+}
+body.dark li a{
+  color: #ffffff;
+}
+body.dark input::placeholder{
+  color: #7c7c7c;
+}
+body.light input::placeholder{
+  color: #616161;
+}
+body.dark input{
+  color: #fff;
+}
+body.light input{
+color: #000000;
+}
+body.dark {
+  background-color: #1a1a1a;
+  color: #fff;
+}
